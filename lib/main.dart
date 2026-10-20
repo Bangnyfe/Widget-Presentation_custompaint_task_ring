@@ -1,7 +1,9 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(const TaskRingApp());
+
 // App root: theme and home screen
 class TaskRingApp extends StatelessWidget {
   const TaskRingApp({super.key});
@@ -31,6 +33,8 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
 
   // Property 1: painter (on = ring painter, off = null)
   bool usePainter = true;
+  // Property 2: size (Size.zero is the default)
+  double ringSize = 220;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +48,7 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
               painter: usePainter
                   ? TaskRingPainter(done: tasksDone, total: totalTasks)
                   : null,
-              size: const Size(220, 220),
+              size: Size(ringSize, ringSize),
             ),
           ),
           const SizedBox(height: 24),
@@ -61,12 +65,31 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
             },
           ),
           const Divider(),
+
           // Property 1 control: shows the current painter value
           SwitchListTile(
             title: const Text('painter'),
             subtitle: Text(usePainter ? 'TaskRingPainter' : 'null (default)'),
             value: usePainter,
             onChanged: (value) => setState(() => usePainter = value),
+          ),
+
+          // Property 2 control: the size CustomPaint aims for
+          ListTile(
+            title: const Text('size'),
+            subtitle: Text(
+              ringSize == 0
+                  ? 'Size.zero (default)'
+                  : 'Size(${ringSize.round()}, ${ringSize.round()})',
+            ),
+          ),
+          Slider(
+            value: ringSize,
+            min: 0,
+            max: 280,
+            divisions: 14,
+            label: '${ringSize.round()}',
+            onChanged: (value) => setState(() => ringSize = value),
           ),
         ],
       ),
@@ -87,6 +110,8 @@ class TaskRingPainter extends CustomPainter {
     final center = size.center(Offset.zero);
     // Shrink the radius so the thick stroke stays inside the canvas
     final radius = (size.shortestSide - strokeWidth) / 2;
+    // Canvas too small for the stroke: nothing to draw
+    if (radius <= 0) return;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     final trackPaint = Paint()
@@ -107,7 +132,7 @@ class TaskRingPainter extends CustomPainter {
     final fraction = total == 0 ? 0.0 : done / total;
     final sweep = 2 * math.pi * fraction;
 
-    // Start from the top or North, then move the completion clock wise
+    // Start from the top or North, then move the completion clockwise
     canvas.drawArc(rect, -math.pi / 2, sweep, false, progressPaint);
   }
 
