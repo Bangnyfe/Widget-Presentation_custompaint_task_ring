@@ -35,9 +35,13 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
   bool usePainter = true;
   // Property 2: size (Size.zero is the default)
   double ringSize = 220;
+  // Property 3: child (null is the default)
+  bool showLabel = false;
 
   @override
   Widget build(BuildContext context) {
+    // Percentage shown in the centre label
+    final percent = (tasksDone * 100 / totalTasks).round();
     return Scaffold(
       appBar: AppBar(title: const Text('Sprint Progress')),
       body: ListView(
@@ -49,6 +53,33 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
                   ? TaskRingPainter(done: tasksDone, total: totalTasks)
                   : null,
               size: Size(ringSize, ringSize),
+              // The label is drawn on top of the painter
+              child: showLabel
+                  ? SizedBox(
+                      // Same size as the ring, so CustomPaint keeps its size
+                      width: ringSize,
+                      height: ringSize,
+                      child: Padding(
+                        padding: const EdgeInsets.all(30),
+                        // Shrinks the text if the ring gets small
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$percent%',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium,
+                              ),
+                              Text('$tasksDone/$totalTasks done'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(height: 24),
@@ -90,6 +121,16 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
             divisions: 14,
             label: '${ringSize.round()}',
             onChanged: (value) => setState(() => ringSize = value),
+          ),
+
+          // Property 3 control: a label widget inside the ring
+          SwitchListTile(
+            title: const Text('child'),
+            subtitle: Text(
+              showLabel ? 'Label in the centre' : 'null (default)',
+            ),
+            value: showLabel,
+            onChanged: (value) => setState(() => showLabel = value),
           ),
         ],
       ),
