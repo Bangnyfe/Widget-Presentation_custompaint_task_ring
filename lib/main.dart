@@ -18,19 +18,47 @@ class TaskRingApp extends StatelessWidget {
   }
 }
 
-//shows the task-completion ring
-class SprintProgressScreen extends StatelessWidget {
+// The demo screen: the ring plus a slider for tasks done
+class SprintProgressScreen extends StatefulWidget {
   const SprintProgressScreen({super.key});
+
+  @override
+  State<SprintProgressScreen> createState() => _SprintProgressScreenState();
+}
+
+class _SprintProgressScreenState extends State<SprintProgressScreen> {
+  // The sprint data the ring shows
+  int tasksDone = 7;
+  final int totalTasks = 10;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Sprint Progress')),
-      body: Center(
-        // CustomPaint gives us a canvas; the painter does the drawing
-        child: CustomPaint(
-          painter: TaskRingPainter(done: 7, total: 10),
-          size: const Size(220, 220),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            // Same ring as before, now fed by state
+            CustomPaint(
+              painter: TaskRingPainter(done: tasksDone, total: totalTasks),
+              size: const Size(220, 220),
+            ),
+            const SizedBox(height: 24),
+            Text('$tasksDone of $totalTasks tasks done'),
+            // Dragging updates tasksDone, which redraws the ring
+            Slider(
+              value: tasksDone.toDouble(),
+              min: 0,
+              max: totalTasks.toDouble(),
+              divisions: totalTasks,
+              label: '$tasksDone',
+              onChanged: (value) {
+                setState(() => tasksDone = value.round());
+              },
+            ),
+          ],
         ),
       ),
     );
