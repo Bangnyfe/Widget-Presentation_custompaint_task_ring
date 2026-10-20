@@ -1,9 +1,8 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 void main() => runApp(const TaskRingApp());
-
+// App root: theme and home screen
 class TaskRingApp extends StatelessWidget {
   const TaskRingApp({super.key});
 
@@ -27,39 +26,49 @@ class SprintProgressScreen extends StatefulWidget {
 }
 
 class _SprintProgressScreenState extends State<SprintProgressScreen> {
-  // The sprint data the ring shows
   int tasksDone = 7;
   final int totalTasks = 10;
+
+  // Property 1: painter (on = ring painter, off = null)
+  bool usePainter = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Sprint Progress')),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            // Same ring as before, now fed by state
-            CustomPaint(
-              painter: TaskRingPainter(done: tasksDone, total: totalTasks),
+        children: [
+          Center(
+            child: CustomPaint(
+              painter: usePainter
+                  ? TaskRingPainter(done: tasksDone, total: totalTasks)
+                  : null,
               size: const Size(220, 220),
             ),
-            const SizedBox(height: 24),
-            Text('$tasksDone of $totalTasks tasks done'),
-            // Dragging updates tasksDone, which redraws the ring
-            Slider(
-              value: tasksDone.toDouble(),
-              min: 0,
-              max: totalTasks.toDouble(),
-              divisions: totalTasks,
-              label: '$tasksDone',
-              onChanged: (value) {
-                setState(() => tasksDone = value.round());
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 24),
+          Center(child: Text('$tasksDone of $totalTasks tasks done')),
+          // Dragging updates tasksDone which redraws the ring
+          Slider(
+            value: tasksDone.toDouble(),
+            min: 0,
+            max: totalTasks.toDouble(),
+            divisions: totalTasks,
+            label: '$tasksDone',
+            onChanged: (value) {
+              setState(() => tasksDone = value.round());
+            },
+          ),
+          const Divider(),
+          // Property 1 control: shows the current painter value
+          SwitchListTile(
+            title: const Text('painter'),
+            subtitle: Text(usePainter ? 'TaskRingPainter' : 'null (default)'),
+            value: usePainter,
+            onChanged: (value) => setState(() => usePainter = value),
+          ),
+        ],
       ),
     );
   }
