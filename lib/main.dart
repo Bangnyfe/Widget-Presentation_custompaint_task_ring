@@ -73,7 +73,6 @@ class _SprintProgressScreenState extends State<SprintProgressScreen> {
                                     .textTheme
                                     .headlineMedium,
                               ),
-                              Text('$tasksDone/$totalTasks done'),
                             ],
                           ),
                         ),
@@ -155,13 +154,25 @@ class TaskRingPainter extends CustomPainter {
     if (radius <= 0) return;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
+    // Turn the fraction of tasks done into an angle (radians)
+    final fraction = total == 0 ? 0.0 : done / total;
+    final sweep = 2 * math.pi * fraction;
+
+    // Arc colour shows sprint health: red, then amber, then green
+    Color healthColor = Colors.green;
+    if (fraction < 0.4) {
+      healthColor = Colors.red;
+    } else if (fraction < 0.7) {
+      healthColor = Colors.orange;
+    }
+
     final trackPaint = Paint()
       ..color = Colors.grey.shade300
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
     final progressPaint = Paint()
-      ..color = Colors.teal
+      ..color = healthColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -169,11 +180,7 @@ class TaskRingPainter extends CustomPainter {
     // Full grey circle = all tasks
     canvas.drawCircle(center, radius, trackPaint);
 
-    // Turn the fraction of tasks done into an angle (radians)
-    final fraction = total == 0 ? 0.0 : done / total;
-    final sweep = 2 * math.pi * fraction;
-
-    // Start from the top or North, then move the completion clockwise
+    // Start at the top (north) and sweep clockwise
     canvas.drawArc(rect, -math.pi / 2, sweep, false, progressPaint);
   }
 
